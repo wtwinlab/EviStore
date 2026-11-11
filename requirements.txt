@@ -1,0 +1,15 @@
+# Core library (dtrust/). Tested with Python 3.12 on Ubuntu 24.04.
+numpy>=1.24
+pandas>=2.0
+torch>=2.2
+torchvision>=0.17
+flwr>=1.6
+cryptography>=41.0
+fastapi>=0.104
+uvicorn[standard]>=0.24
+pydantic>=2.5
+httpx>=0.25
+loguru>=0.7
+click>=8.1
+pyyaml>=6.0
+python-dotenv>=1.0

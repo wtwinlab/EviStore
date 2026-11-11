@@ -1,0 +1,71 @@
+# DTRUST Gramine Manifest  (Gramine 1.9)
+# 在 SGX enclave 中运行 DTRUST Python（attestation + FL）
+{% set python = '/root/DTRUST/venv/bin/python3.10' %}
+{% set arch_libdir = '/lib/x86_64-linux-gnu' %}
+
+libos.entrypoint = "{{ python }}"
+loader.argv = ["python3.10", "/root/DTRUST/t2b_seal_ledger.py"]
+
+loader.log_level = "error"
+
+loader.env.LD_LIBRARY_PATH = "{{ arch_libdir }}:/usr/lib:/usr/{{ arch_libdir }}"
+loader.env.PATH = "/root/DTRUST/venv/bin:/usr/bin:/bin"
+loader.env.PYTHONHOME = "/root/DTRUST/venv"
+loader.env.PYTHONPATH = "/root/DTRUST:/root/DTRUST/venv/lib/python3.10/site-packages:/usr/lib/python3.10"
+loader.env.DTRUST_HOME = "/root/DTRUST"
+loader.env.SGX_AESM_ADDR = "1"
+
+# SGX 参数
+sgx.debug = false
+sgx.edmm_enable = false
+sgx.enclave_size = "2G"
+sgx.max_threads = 32
+sgx.remote_attestation = "dcap"
+
+# 挂载文件系统
+fs.mounts = [
+  { path = "{{ arch_libdir }}",          uri = "file:{{ arch_libdir }}" },
+  { path = "/usr/lib/x86_64-linux-gnu",  uri = "file:/usr/lib/x86_64-linux-gnu" },
+  { path = "/usr/lib/python3.10",        uri = "file:/usr/lib/python3.10" },
+  { path = "/usr/lib/python3",           uri = "file:/usr/lib/python3" },
+  { path = "/root/DTRUST/venv",          uri = "file:/root/DTRUST/venv" },
+  { path = "/root/DTRUST/dtrust",        uri = "file:/root/DTRUST/dtrust" },
+  { path = "/root/DTRUST/tests",         uri = "file:/root/DTRUST/tests" },
+  { path = "/root/DTRUST/config",        uri = "file:/root/DTRUST/config" },
+  { path = "/root/DTRUST/.env",          uri = "file:/root/DTRUST/.env" },
+  { path = "/root/DTRUST/logs",          uri = "file:/root/DTRUST/logs" },
+  { path = "/root/DTRUST/results",       uri = "file:/root/DTRUST/results" },
+  { path = "/etc/sgx_default_qcnl.conf", uri = "file:/etc/sgx_default_qcnl.conf" },
+  { path = "/run/aesmd",                 uri = "file:/run/aesmd" },
+  { type = "tmpfs", path = "/tmp" },
+  { type = "encrypted", path = "/sealed", uri = "file:/root/DTRUST/t2b_sealed", key_name = "_sgx_mrenclave" },
+  { path = "/root/DTRUST/t2b_seal_ledger.py", uri = "file:/root/DTRUST/t2b_seal_ledger.py" },
+]
+
+sys.insecure__allow_eventfd = true
+
+# 信任文件清单
+sgx.trusted_files = [
+  "file:{{ gramine.libos }}",
+  "file:{{ gramine.runtimedir() }}/",
+  "file:{{ python }}",
+  "file:{{ arch_libdir }}/",
+  "file:/usr/lib/x86_64-linux-gnu/",
+  "file:/usr/lib/python3.10/",
+  "file:/root/DTRUST/venv/lib/python3.10/site-packages/",
+  "file:/root/DTRUST/dtrust/",
+  "file:/root/DTRUST/tests/",
+  "file:/root/DTRUST/config/",
+  "file:/root/DTRUST/t2b_seal_ledger.py",
+]
+
+sgx.allowed_files = [
+  "file:/root/DTRUST/logs/",
+  "file:/root/DTRUST/results/",
+  "file:/root/DTRUST/data/",
+  "file:/root/DTRUST/.env",
+  "file:/etc/sgx_default_qcnl.conf",
+  "file:/run/aesmd/",
+  "file:/root/DTRUST/venv/",
+  "file:/root/DTRUST/t2b_sealed/",
+]
